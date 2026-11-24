@@ -1,0 +1,271 @@
+AARADHYA SETU - BOOKING WORKFLOW, START TO END
+=============================================
+
+This file follows ONE booking (Priya's AS-1024 from scenario.txt) from the
+moment she fills the form to the moment the puja is completed. At every step
+it shows:
+   WHO does something  ->  WHAT happens in the app  ->  WHAT changes in the database
+
+Database: MongoDB, one collection "bookings" (see db.txt for every field).
+
+Legend:
+   [BUILT]  = exists in our project and works
+   [MOCKED] = not built; we fake it with seed data or leave it for later
+
+
+===========================================================================
+OVERVIEW (one picture)
+===========================================================================
+
+  CUSTOMER                     SYSTEM / DATABASE                    ADMIN
+  --------                     -----------------                    -----
+  1. Fills form + pays  ---->  2. New document inserted
+                                  in "bookings"
+                                  status = Pending
+                                  statusHistory = [Pending]
+                                         |
+                                         v
+                               3. Shows up in dashboard  ------>  4. Sees it, opens details
+                                                                   5. Arranges pandit/slot
+                                                                      (phone call, offline)
+                               7. Document updated     <-------  6. Presses "Mark as Confirmed"
+                                  status = Confirmed
+                                  statusHistory += Confirmed
+                                         |
+  8. (Gets update message) <----  (notification - mocked)
+                                         |
+                               ... same loop for In Progress, then Completed ...
+                                         |
+                                         v
+                               10. Booking finished: status = Completed,
+                                   full history stored forever
+
+
+===========================================================================
+STEP 1 - CUSTOMER FILLS THE BOOKING FORM                          [MOCKED]
+===========================================================================
+
+Who   : Priya (the devotee), on www.aaradhyasetu.com
+Does  : Picks "Rudrabhishek", picks a date, enters her details, adds
+        "Prasad Delivery", pays Rs 2,351.
+
+Information she gives -> where it will be stored:
+
+   What Priya enters                      Field in "bookings"
+   -------------------------------------  ------------------------------
+   Her name                               devotee.name
+   WhatsApp number                        devotee.phone
+   Email                                  devotee.email
+   Puja chosen                            puja        (+ temple, from the puja list)
+   Date she wants                         pujaDate
+   Who the puja is for + their gotra      beneficiaries[ ] (name, gotra)
+   Her wish                               sankalp
+   Extra offerings ticked                 addOns[ ] (name, price)
+   Total she pays                         amount  (= puja price + add-ons)
+
+Mocked because: the customer website and payment are outside this assignment.
+In our project, scripts/seed.mjs creates these bookings instead
+(run: npm run seed). Priya's AS-1024 is one of them.
+
+
+===========================================================================
+STEP 2 - BOOKING IS SAVED (database INSERT)                       [MOCKED]
+===========================================================================
+
+Who   : the system (website backend), right after payment succeeds
+Does  : Creates ONE new document in the "bookings" collection.
+
+DATABASE CHANGE:  bookings  ->  INSERT 1 new document
+
+   bookingId      = "AS-1024"         <- new unique number generated
+   devotee        = { Priya's details }
+   puja / temple  = "Rudrabhishek" / "Kashi Vishwanath, Varanasi"
+   pujaDate       = 30 Nov 2026
+   amount         = 2351
+   beneficiaries  = [ { Ramesh Sharma, Kashyap } ]
+   sankalp        = "Good health for my father"
+   addOns         = [ { Prasad Delivery, 251 } ]
+   status         = "Pending"                 <- every new booking starts here
+   statusHistory  = [ { Pending, 23 Nov 18:18 } ]
+   createdAt      = 23 Nov 18:18              <- automatic
+   updatedAt      = 23 Nov 18:18              <- automatic
+
+Nothing else in the database changes. There is only one collection.
+
+(In a real system this would be a "POST /api/bookings" endpoint called by the
+website. We don't have it yet. The seed script uses Booking.insertMany().)
+
+
+===========================================================================
+STEP 3 - BOOKING APPEARS ON THE ADMIN DASHBOARD                    [BUILT]
+===========================================================================
+
+Who   : the system
+Does  : When the admin opens or refreshes http://localhost:3000, the page calls
+
+          GET /api/bookings?sort=createdAt&order=desc
+
+        The API runs two READ-ONLY queries:
+          a) find all bookings, newest first -> the table
+          b) count bookings per status       -> the summary cards
+
+DATABASE CHANGE:  none (read only)
+
+What the admin sees:
+   - AS-1024 at the TOP of the table (newest booking), with a yellow "Pending" badge
+   - The "Pending" card count has gone up by 1
+
+
+===========================================================================
+STEP 4 - ADMIN REVIEWS THE BOOKING                                 [BUILT]
+===========================================================================
+
+Who   : Rahul (admin)
+Does  : Can click the "Pending" card to see only bookings waiting for action,
+        or search "AS-1024" / "Priya". Then clicks the row.
+
+        The details panel calls:   GET /api/bookings/AS-1024
+
+DATABASE CHANGE:  none (read only)
+
+What Rahul sees: phone, email, the people the puja is for and their gotra, the sankalp,
+the add-ons and the payment breakdown, "Booked on", "Puja date (In 7 days)", and the status history.
+
+
+===========================================================================
+STEP 5 - ADMIN MAKES THE ARRANGEMENTS                   [OUTSIDE THE APP]
+===========================================================================
+
+Who   : Rahul
+Does  : Real-world work, not done in the software:
+          - calls the temple in Varanasi
+          - books a pandit for 30 Nov, morning slot
+          - passes on the names, gotra and sankalp to the pandit
+
+DATABASE CHANGE:  none yet. The app only learns about it in step 6.
+
+
+===========================================================================
+STEP 6 - ADMIN PRESSES "MARK AS CONFIRMED"                         [BUILT]
+===========================================================================
+
+Who   : Rahul, in the details panel
+Does  : Clicks the orange button "Mark as Confirmed"
+        (or clicks "Confirmed" in the "set status directly" row).
+
+        The browser sends:
+           PATCH /api/bookings/AS-1024
+           body: { "status": "Confirmed" }
+
+The API then:
+   1. Checks "Confirmed" is one of the 4 allowed statuses.
+      If not -> replies 400 "status must be one of ..." and NOTHING is saved.
+   2. Finds the booking with bookingId "AS-1024".
+      If not found -> replies 404 and nothing is saved.
+   3. Updates it (step 7).
+
+
+===========================================================================
+STEP 7 - DATABASE IS UPDATED (database UPDATE)                     [BUILT]
+===========================================================================
+
+DATABASE CHANGE:  bookings  ->  UPDATE 1 document (AS-1024)
+
+   Field           Before                         After
+   --------------  -----------------------------  -----------------------------------------
+   status          "Pending"                      "Confirmed"
+   statusHistory   [ Pending 23 Nov 18:18 ]       [ Pending 23 Nov 18:18,
+                                                    Confirmed 23 Nov 18:19 ]   <- 1 entry ADDED
+   updatedAt       23 Nov 18:18                   23 Nov 18:19                 <- automatic
+   (every other field stays the same)
+
+Both changes happen in ONE database operation (findOneAndUpdate with $set +
+$push), so status and history can never get out of sync.
+
+Then the screen updates immediately:
+   - the details panel badge turns blue "Confirmed"
+   - the button now says "Mark as In Progress"
+   - the status history timeline shows the new entry on top
+   - the table row badge changes
+   - the dashboard re-fetches the counts: Pending -1, Confirmed +1
+Anyone else who opens or refreshes the dashboard sees the same thing, because it's saved in the database.
+
+
+===========================================================================
+STEP 8 - CUSTOMER IS TOLD                                         [MOCKED]
+===========================================================================
+
+Who   : the system
+Does  : In a real system, the status change would trigger a WhatsApp/email to
+        devotee.phone / devotee.email, e.g.
+        "Namaste Priya, your Rudrabhishek (AS-1024) is confirmed for 30 Nov."
+
+Not built in Option 2. (This is exactly what Option 3 of the assignment covers:
+message templates + a "notifications" collection storing every message sent.)
+
+DATABASE CHANGE in our project:  none.
+
+
+===========================================================================
+STEP 9 - REPEAT FOR THE NEXT STAGES                                [BUILT]
+===========================================================================
+
+Same loop as steps 5 -> 8 each time: real-world event, admin presses the button,
+one UPDATE to the same document.
+
+  When (real world)                 Admin presses             status becomes   statusHistory gets
+  --------------------------------  ------------------------  ---------------  ------------------
+  Pandit + slot fixed (step 5)      Mark as Confirmed         Confirmed        + Confirmed, time
+  30 Nov, pandit starts the puja    Mark as In Progress       In Progress      + In Progress, time
+  Puja done, video/prasad sent      Mark as Completed         Completed        + Completed, time
+
+The dashboard helps Rahul with timing: on 30 Nov the puja date shows "Today" (in orange).
+Sorting by "Puja date: soonest first" with the "Confirmed" filter gives him
+today's to-do list.
+
+Mistakes can be fixed: "set status directly" lets the admin move a booking
+back (e.g. Confirmed -> Pending). That is also recorded in statusHistory, so
+nothing is silently lost.
+
+
+===========================================================================
+STEP 10 - END STATE                                                [BUILT]
+===========================================================================
+
+After the last button press, AS-1024 looks like this in the database:
+
+   status        = "Completed"   (no more "Mark as ..." button is shown)
+   statusHistory = [ Pending     23 Nov 18:18,
+                     Confirmed   23 Nov 18:19,
+                     In Progress 30 Nov 09:00,
+                     Completed   30 Nov 11:30 ]
+   updatedAt     = 30 Nov 11:30
+   all customer details unchanged
+
+The document is never deleted. It stays as the permanent record of the booking,
+counted in the "Completed" card, and can still be searched and opened.
+
+
+===========================================================================
+SUMMARY: WHAT TOUCHES THE DATABASE, AND HOW
+===========================================================================
+
+  Step  Action                         Endpoint / script          DB operation on "bookings"
+  ----  -----------------------------  -------------------------  ---------------------------
+  2     Customer books (mocked)        npm run seed               INSERT (insertMany)
+  3     Dashboard loads / refreshes    GET   /api/bookings        READ  (find + count)
+  4     Admin opens a booking          GET   /api/bookings/:id    READ  (findOne)
+  7     Admin changes status           PATCH /api/bookings/:id    UPDATE status + push history
+  -     (no delete anywhere)           -                          -
+
+  Only ONE thing an admin does writes to the database: changing a status.
+  Everything else on the dashboard only reads.
+
+
+===========================================================================
+WHAT WOULD COME NEXT (not built)
+===========================================================================
+  - POST /api/bookings  -> so the real website can create bookings (step 2)
+  - Notifications on every status change (step 8) -> Option 3
+  - Admin login, and storing WHICH admin changed the status in statusHistory
+  - Only allow forward moves (Pending -> Confirmed -> ...) unless a manager overrides

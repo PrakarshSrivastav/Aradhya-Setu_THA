@@ -1,0 +1,157 @@
+AARADHYA SETU - DATABASE STRUCTURE
+==================================
+
+Database : MongoDB
+Name     : aaradhya_setu   (from MONGODB_URI in puja-dashboard/.env.local)
+Code     : puja-dashboard/models/Booking.js
+
+A NOTE ON "TABLES"
+------------------
+MongoDB does not have tables and rows. It has COLLECTIONS and DOCUMENTS.
+  - A collection is like a table.
+  - A document is like a row, stored as JSON.
+  - A document can contain nested objects and lists inside it.
+
+This app has ONE collection: "bookings".
+Things that would be separate tables in SQL (devotee, add-ons, status history)
+are stored INSIDE each booking document instead. They are always read together
+with the booking, so one query gets everything and no JOINs are needed.
+
+
+COLLECTION: bookings
+====================
+One document = one puja booking made by a devotee on the website.
+
+TOP-LEVEL FIELDS
+----------------
+Field          Type       Required  Example                         Used for
+-------------  ---------  --------  ------------------------------  -------------------------------------------
+_id            ObjectId   auto      6741f0c2a9e1...                 MongoDB's internal ID. Not shown to admins.
+bookingId      String     yes       "AS-1024"                       The human-friendly booking number. Shown in
+                          unique                                     the table, used in search and in the URL
+                                                                     /api/bookings/AS-1024. No duplicates allowed.
+devotee        Object     yes       (see below)                     The person who booked and paid.
+puja           String     yes       "Rudrabhishek"                  Which puja was booked. Shown in the table,
+                                                                     searchable, used by the "All pujas" filter.
+temple         String     no        "Kashi Vishwanath, Varanasi"    Where the puja is done. Shown under the puja
+                                                                     name and in the details view.
+pujaDate       Date       yes       2026-11-30                      The day the puja happens. Shown with
+                                                                     "In 7 days" / "Tomorrow" etc. Sortable
+                                                                     (soonest first is how admins plan work).
+amount         Number     yes       2351                            Total paid in rupees (puja price + add-ons).
+                                                                     Shown as Rs 2,351. Sortable.
+status         String     no        "Pending"                       Where the booking is in its lifecycle.
+                          default:                                   Only 4 values allowed (see below). Shown as a
+                          Pending                                    coloured badge, used by the status filter and
+                                                                     the summary count cards. Changed by the admin.
+beneficiaries  List       no        (see below)                     People the puja is performed for.
+sankalp        String     no        "Good health for my father"     The devotee's wish/intention for the puja.
+                                                                     Shown in the details view so the pandit can
+                                                                     read it out.
+addOns         List       no        (see below)                     Extra offerings the devotee paid for.
+statusHistory  List       no        (see below)                     Log of every status change, with time.
+createdAt      Date       auto      2026-11-23 18:18                When the booking was made ("Booked on").
+                                                                     Added automatically. Used for the default
+                                                                     sort "Newest bookings first".
+updatedAt      Date       auto      2026-11-23 18:19                When the booking was last changed. Added
+                                                                     automatically by Mongoose.
+
+ALLOWED STATUS VALUES (in order)
+--------------------------------
+  Pending      -> booking and payment received, not yet arranged
+  Confirmed    -> pandit and time slot fixed
+  In Progress  -> puja is happening now
+  Completed    -> puja done, video/prasad sent
+Anything else is rejected by both the database schema and the API.
+
+
+NESTED: devotee   (one object inside each booking)
+-------------------------------------------------
+Field   Type    Example              Used for
+------  ------  -------------------  -----------------------------------------------
+name    String  "Priya Sharma"       Shown in the table. Searchable. Required.
+phone   String  "+91 9876543210"     WhatsApp number. Shown in table + details view
+                                     (click to call). Where updates would be sent.
+email   String  "priya@example.com"  Shown in details view (click to email).
+
+
+NESTED: beneficiaries   (list - one entry per person the puja is for)
+--------------------------------------------------------------------
+Field   Type    Example          Used for
+------  ------  ---------------  -------------------------------------------------
+name    String  "Ramesh Sharma"  Name the pandit says during the puja.
+gotra   String  "Kashyap"        Family lineage, also said during the puja.
+
+Why separate from devotee? The person who pays (Priya) is often not the
+person the puja is for (her father Ramesh).
+
+
+NESTED: addOns   (list - can be empty)
+--------------------------------------
+Field   Type    Example            Used for
+------  ------  -----------------  -----------------------------------------------
+name    String  "Prasad Delivery"  Shown in the payment breakdown.
+price   Number  251                Price of that add-on. The details view works out
+                                   the base puja price as: amount - sum(add-on prices).
+
+
+NESTED: statusHistory   (list - grows by one entry every time status changes)
+-----------------------------------------------------------------------------
+Field      Type    Example            Used for
+---------  ------  -----------------  -------------------------------------------
+status     String  "Confirmed"        The status the booking moved to.
+changedAt  Date    2026-11-23 18:19   When it changed.
+
+Shown as the timeline in the details view (newest at the top). It gives an
+audit trail: who-did-what-when can be added later by also storing the admin's name.
+
+
+EXAMPLE DOCUMENT (Priya's booking from scenario.txt)
+----------------------------------------------------
+{
+  "_id": "6741f0c2a9e1...",
+  "bookingId": "AS-1024",
+  "devotee": { "name": "Priya Sharma", "phone": "+91 9876543210", "email": "priya@example.com" },
+  "puja": "Rudrabhishek",
+  "temple": "Kashi Vishwanath, Varanasi",
+  "pujaDate": "2026-11-30T03:30:00Z",
+  "amount": 2351,
+  "status": "Pending",
+  "beneficiaries": [ { "name": "Ramesh Sharma", "gotra": "Kashyap" } ],
+  "sankalp": "Good health for my father",
+  "addOns": [ { "name": "Prasad Delivery", "price": 251 } ],
+  "statusHistory": [ { "status": "Pending", "changedAt": "2026-11-23T12:48:38Z" } ],
+  "createdAt": "2026-11-23T12:48:38Z",
+  "updatedAt": "2026-11-23T12:48:38Z"
+}
+
+
+HOW THE APP USES THE COLLECTION
+-------------------------------
+API call                          Database operation
+--------------------------------  ---------------------------------------------------------
+GET   /api/bookings               find() with filters on bookingId / devotee.name / puja
+                                  (search), status, puja; sort() by pujaDate, amount,
+                                  createdAt or bookingId.
+                                  Plus an aggregate() that counts bookings per status
+                                  for the summary cards.
+GET   /api/bookings/AS-1024       findOne({ bookingId: "AS-1024" }) for the details view.
+PATCH /api/bookings/AS-1024       findOneAndUpdate(): $set the new status AND $push a new
+                                  entry onto statusHistory, in one atomic step.
+
+INDEXES
+-------
+  _id        - automatic, unique.
+  bookingId  - unique (stops two bookings sharing a number, makes lookups by ID fast).
+  With ~30 dummy bookings nothing else is needed. With thousands of real bookings,
+  indexes on status, pujaDate and createdAt would speed up filtering and sorting.
+
+
+NOT STORED (lookup lists kept in code instead)
+----------------------------------------------
+File: puja-dashboard/lib/constants.js
+  STATUSES - the 4 allowed statuses.
+  PUJAS    - puja names, temples and base prices (used by the puja filter + seed data).
+  ADD_ONS  - add-on names and prices (used by seed data).
+In a full product these would become their own collections ("pujas", "addons")
+so staff could edit them without changing code.

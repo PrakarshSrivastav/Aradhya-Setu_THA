@@ -1,0 +1,103 @@
+AARADHYA SETU - PUJA BOOKING SCENARIO
+=====================================
+
+This file explains, in simple English, how a booking starts on the customer side
+and what the admin does with it once it arrives. The dashboard we are building
+(Option 2) is the ADMIN side of this story.
+
+
+PART 1 - CUSTOMER VIEW (the devotee)
+------------------------------------
+
+Meet Priya. She lives in Bengaluru and wants a Rudrabhishek puja done in Varanasi
+for her father's health, but she cannot travel there.
+
+1. Priya opens www.aaradhyasetu.com on her phone.
+
+2. She browses the list of pujas (Rudrabhishek, Satyanarayan Katha,
+   Navagraha Shanti, Lakshmi Puja, and so on). Each puja shows a photo,
+   a short description, the temple, the benefits and the price.
+
+3. She taps "Rudrabhishek" and reads the details.
+
+4. She fills in a short form:
+     - Her name (the devotee)
+     - Name(s) of the people the puja is for, and their gotra
+     - Her WhatsApp number and email
+     - The date she wants the puja done
+     - A sankalp / wish (for example: "good health for my father")
+     - Any add-ons (extra offerings like flowers, prasad delivery)
+
+5. She sees the total amount, for example Rs 2,100, and pays online.
+
+6. The website shows: "Your booking is placed! Booking ID: AS-1024".
+   She also gets the same message on WhatsApp / email.
+
+7. Right now her booking is PENDING. That means:
+   "We have your request and payment. Our team still has to confirm it."
+
+8. Later, Priya receives updates as the booking moves forward:
+     - CONFIRMED   -> "A pandit and a time slot are fixed for your puja."
+     - IN PROGRESS -> "Your puja is happening now."
+     - COMPLETED   -> "Your puja is done. Video / photos / prasad are on the way."
+
+From Priya's side, that's it: book, pay, get updates.
+
+
+PART 2 - ADMIN VIEW (the Aaradhya Setu team)
+--------------------------------------------
+
+Meet Rahul. He works on the operations team and handles bookings.
+
+1. Rahul opens the Admin Dashboard (the app we are building).
+
+2. He sees a table of all bookings. Each row shows:
+     Booking ID | Devotee | Puja | Puja Date | Amount | Status
+
+3. Priya's new booking, AS-1024, appears with status PENDING.
+
+4. Rahul can find bookings quickly:
+     - SEARCH  : type "Priya" or "AS-1024" or "Rudrabhishek"
+     - FILTER  : show only Pending bookings, or only one puja type
+     - SORT    : by puja date (what is coming up soon) or by amount
+
+5. He clicks on AS-1024 to open the BOOKING DETAILS view. There he sees
+   everything Priya entered: phone, email, people the puja is for, gotra,
+   sankalp, temple, add-ons, amount paid, and when the booking was made.
+
+6. Rahul calls the temple, fixes a pandit for that date, and then changes
+   the status from PENDING to CONFIRMED.
+   The change is saved in the database, so everyone on the team sees it.
+
+7. On the puja day, when the pandit starts, Rahul changes it to IN PROGRESS.
+
+8. When the puja is over and the video is ready, he changes it to COMPLETED.
+
+9. At the top of the dashboard Rahul also sees simple counts, for example:
+     Pending: 5 | Confirmed: 12 | In Progress: 2 | Completed: 40
+   so he knows at a glance how much work is waiting.
+
+
+THE STATUS LIFECYCLE (one line)
+-------------------------------
+
+   PENDING  ->  CONFIRMED  ->  IN PROGRESS  ->  COMPLETED
+   (new)        (pandit &     (puja is        (puja done,
+                 date fixed)   happening)      video/prasad sent)
+
+
+WHAT IS IN SCOPE FOR THIS ASSIGNMENT
+------------------------------------
+
+In scope (we build this):
+  - Admin dashboard: table, search, filters, sorting, details view
+  - Changing status (Pending / Confirmed / In Progress / Completed)
+  - Backend APIs + MongoDB so changes are saved
+  - Works on mobile and desktop
+  - Dummy bookings (seed data) so the dashboard has something to show
+
+Out of scope (mocked or skipped):
+  - The real customer website and online payment
+    (we only pretend bookings came from it, using seed data)
+  - Real WhatsApp / email messages
+  - Admin login (can be added later if time allows)
