@@ -1,0 +1,93 @@
+AARADHYA SETU - HOW THIS PROJECT WAS PLANNED AND HOW AI WAS USED
+================================================================
+
+The assignment says AI tools are fully allowed. This file explains, honestly,
+which decisions were mine and which work an AI coding assistant (Claude Code)
+did, so the reviewer knows what to ask me about.
+
+
+1. HOW I APPROACHED IT
+----------------------
+
+Step 1 - Understand the brief and pick one option
+  I read all three options and compared them on scope, demo-ability and
+  what each would show about me. I picked Option 2 (Puja Booking Dashboard):
+  it is well defined, can be demoed locally, and covers the full stack
+  (UI, API, database).
+
+Step 2 - Plan in plain English before any code
+  Before writing code I wanted the business flow clear, so I had the plan
+  written down as documents first:
+    - scenario.txt : the story from both sides. A devotee (Priya) books a
+                     puja; an admin (Rahul) receives it and works on it.
+                     It also fixes what is in scope and what is mocked.
+    - workflow.txt : the same booking traced step by step. Customer gives
+                     details -> which record is created -> admin makes
+                     arrangements -> presses a button -> what changes in
+                     the database -> what happens next.
+    - db.txt       : every field in the database, its type, and where the
+                     app uses it.
+  I decided these documents should exist and what each should answer. The
+  workflow.txt question ("customer -> which table -> admin -> button ->
+  then what") is the one I set.
+
+Step 3 - Decide the stack and the data store
+  The brief names Next.js/React, Node.js and MongoDB. I considered
+  PostgreSQL, but stayed with MongoDB because the brief asks for it.
+  MongoDB runs locally through an npm package, so a reviewer can run the
+  project without installing a database.
+
+Step 4 - Go beyond the brief, on purpose
+  I asked for feature ideas that would make the dashboard useful to the
+  real business rather than generic, compared five, and chose two:
+    - "Needs attention" alerts: catch bookings at risk of being missed
+      (still Pending close to the puja date, or past the date and not
+      Completed). A missed puja is the worst failure for this business.
+    - Daily puja run-sheet: everything a pandit needs for the day, grouped
+      by temple, printable or shareable on WhatsApp.
+
+Step 5 - Review, test, version
+  I reviewed the screens as they were built, then set up the GitHub repo.
+  Work was committed in logical steps (scaffold -> API -> UI -> docs ->
+  each feature) so the history is easy to follow.
+
+
+2. WHAT THE AI DID
+------------------
+
+I used Claude Code (an AI coding assistant) for the hands-on work:
+  - Writing the code: Next.js project setup, the Mongoose Booking model,
+    API routes, React components, styling and seed data.
+  - Proposing the database schema and code structure, which I then had
+    written up in db.txt so I could review and explain them.
+  - Drafting the text of scenario.txt, workflow.txt and db.txt from my
+    instructions.
+  - Testing in a browser (desktop and mobile), and fixing bugs it found,
+    e.g. dummy bookings with booking dates in the future, and a missing
+    base-price line in the payment breakdown.
+  - Writing commit messages and pushing to GitHub at my request.
+  - Making the launch video (brag-output/brag.mp4). I chose the tool: the
+    open-source /brag skill (github.com/latent-spaces/brag). The AI followed
+    its instructions to plan the storyboard, build the animated scenes from the
+    app's real styles, compose an original soundtrack, and render the video.
+
+
+3. DECISIONS I CAN EXPLAIN
+--------------------------
+
+  - Why one "bookings" collection with nested devotee / add-ons / status
+    history instead of separate tables: they are always read together with
+    the booking, so one query returns everything and no joins are needed.
+  - Why status changes also append to statusHistory in one atomic update:
+    the status and its history can never disagree, and there is an audit
+    trail.
+  - Why the "needs attention" rules live in one file (lib/attention.js) and
+    are used by both the database query and the on-screen labels: the count
+    and the reasons can never disagree.
+  - Why the run-sheet leaves out devotee phone and email: the pandit does
+    not need them, so they are not shared.
+  - What is mocked and why: the customer website, payment and WhatsApp
+    messages are outside Option 2, so bookings come from seed data.
+  - What I would build next: a POST endpoint for real bookings, admin
+    login, notifications on status change (Option 3), and only allowing
+    forward status moves unless a manager overrides.
