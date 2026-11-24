@@ -1,2 +1,9 @@
 # Company assignment brief - not ours to publish
 *.pdf
+
+# brag video: keep the deliverables and source scripts, not render scratch files
+brag-output/work/frames/
+brag-output/work/stills/
+brag-output/work/edge-profile/
+brag-output/work/*.wav
+brag-output/work/*.png

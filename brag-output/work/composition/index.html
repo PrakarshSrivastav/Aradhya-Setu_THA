@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>brag — Aaradhya Setu</title>
+<link rel="stylesheet" href="app.css" />
+<style>
+  @font-face { font-family: "Geist"; src: url(fonts/geist-latin.woff2) format("woff2"); font-weight: 100 900; }
+  @font-face { font-family: "Geist Mono"; src: url(fonts/geist-mono-latin.woff2) format("woff2"); font-weight: 100 900; }
+  html, body { margin: 0; background: #fdfaf6; }
+  #stage { width: 1920px; height: 1080px; position: relative; overflow: hidden; background: #fdfaf6; color: #1c1917;
+           font-family: "Geist", system-ui, sans-serif; }
+  .zoomed { zoom: 1.4; }
+  .abs { position: absolute; }
+  .will { will-change: transform, opacity; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- soft saffron glow, gives the canvas depth -->
+  <div class="abs inset-0" style="background: radial-gradient(1200px 700px at 50% -10%, rgba(251,146,60,.16), transparent 70%), radial-gradient(900px 600px at 110% 110%, rgba(245,158,11,.10), transparent 70%);"></div>
+
+  <!-- ============ SCENE 1: HOOK ============ -->
+  <div id="s1" class="abs inset-0 flex flex-col items-center justify-center gap-16">
+    <div id="toast" class="will flex w-[1000px] items-center gap-6 rounded-3xl border border-stone-200 bg-white px-8 py-7 shadow-2xl">
+      <div id="toastLogo" class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-orange-500 to-amber-500 text-4xl text-white shadow-sm">ॐ</div>
+      <div class="min-w-0 flex-1">
+        <div class="text-lg font-semibold uppercase tracking-wider text-orange-600">New booking</div>
+        <div class="text-[34px] font-semibold leading-tight text-stone-900"><span class="font-mono text-orange-700">AS-1024</span> · Rudrabhishek</div>
+        <div class="text-2xl text-stone-500">Priya Sharma · Kashi Vishwanath, Varanasi</div>
+      </div>
+      <div class="flex flex-col items-end gap-2">
+        <div class="text-[34px] font-semibold tabular-nums text-stone-900">₹2,351</div>
+        <span class="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-amber-100 px-4 py-1 text-xl font-medium text-amber-800 ring-1 ring-inset ring-amber-200"><span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>Pending</span>
+      </div>
+    </div>
+    <div id="nowwhat" class="will text-[132px] font-semibold leading-none tracking-tight text-stone-900">Now what<span class="text-orange-600">?</span></div>
+  </div>
+
+  <!-- ============ SCENES 2–5: THE DASHBOARD ============ -->
+  <div id="win" class="will abs overflow-hidden rounded-[28px] border border-stone-200 bg-[#fdfaf6] shadow-2xl" style="left:160px; top:52px; width:1600px; height:820px;">
+    <div class="zoomed" style="width:1142.857px; height:585.714px; position:relative; overflow:hidden;">
+      <header class="border-b border-orange-100 bg-white">
+        <div class="mx-auto flex items-center justify-between px-6 py-3">
+          <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br from-orange-500 to-amber-500 text-lg text-white shadow-sm">ॐ</div>
+            <div>
+              <div class="font-semibold leading-tight text-stone-900">Aaradhya Setu</div>
+              <div class="text-xs text-stone-500">Puja Bookings · Admin</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="rounded-lg bg-orange-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm">Today's run-sheet</span>
+            <span class="rounded-lg border border-stone-200 px-3 py-1.5 text-sm text-stone-600">Refresh</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="space-y-3 px-6 py-4">
+        <div>
+          <h1 class="text-xl font-semibold text-stone-900">Bookings</h1>
+          <p id="subtitle" class="text-sm text-stone-500">Search, filter and update the status of puja bookings.</p>
+        </div>
+
+        <!-- attention banner (scene 5) -->
+        <div id="bannerWrap" style="overflow:hidden; max-height:0;">
+          <div id="banner" role="alert" class="flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-600 text-xs font-bold text-white">!</span>
+              <div class="text-sm">
+                <p class="font-semibold text-rose-900">4 bookings need attention</p>
+                <p class="text-rose-700">Not confirmed with the puja 2 days away or less, or past the puja date without being completed.</p>
+              </div>
+            </div>
+            <span class="shrink-0 rounded-lg border border-rose-300 bg-white px-3 py-2 text-sm font-semibold text-rose-700">Show all bookings</span>
+          </div>
+        </div>
+
+        <div id="cards" class="grid grid-cols-5 gap-3"></div>
+
+        <div class="flex items-center gap-3">
+          <div id="search" class="relative flex h-10 flex-1 items-center rounded-lg border border-stone-300 bg-white pl-9 pr-3 text-sm">
+            <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.45 4.39l3.08 3.08a.75.75 0 11-1.06 1.06l-3.08-3.08A7 7 0 012 9z" clip-rule="evenodd"/></svg>
+            <span id="searchPh" class="text-stone-400">Search by booking ID, devotee or puja…</span>
+            <span id="searchText" class="text-stone-800"></span><span id="caret" class="ml-px inline-block h-4 w-px bg-stone-800"></span>
+          </div>
+          <span class="flex h-10 items-center rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-800">All statuses ▾</span>
+          <span class="flex h-10 items-center rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-800">All pujas ▾</span>
+          <span class="flex h-10 items-center rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-800">Newest bookings first ▾</span>
+          <span id="clearBtn" class="h-10 rounded-lg px-3 text-sm font-medium leading-10 text-orange-700">Clear filters</span>
+        </div>
+
+        <div class="text-sm text-stone-500"><span id="countLine">30 bookings</span><span id="attOnly" class="ml-1 font-medium text-rose-700">· needing attention only</span></div>
+
+        <div class="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
+          <table class="w-full table-fixed text-sm">
+            <colgroup><col style="width:11%"><col style="width:17%"><col style="width:22%"><col style="width:13%"><col style="width:9%"><col style="width:28%"></colgroup>
+            <thead class="border-b border-stone-200 bg-stone-50 text-stone-500">
+              <tr>
+                <th class="px-4 py-2.5 text-left font-medium">Booking ID <span class="text-stone-300">↕</span></th>
+                <th class="px-4 py-2.5 text-left font-medium">Devotee</th>
+                <th class="px-4 py-2.5 text-left font-medium">Puja</th>
+                <th class="px-4 py-2.5 text-left font-medium">Puja date <span class="text-stone-300">↕</span></th>
+                <th class="px-4 py-2.5 text-right font-medium">Amount <span class="text-stone-300">↕</span></th>
+                <th class="px-4 py-2.5 text-left font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody id="rowsMain" class="divide-y divide-stone-100"></tbody>
+            <tbody id="rowsAtt" class="divide-y divide-stone-100"></tbody>
+          </table>
+        </div>
+      </main>
+
+      <!-- details drawer (scene 4) -->
+      <div id="overlay" class="absolute inset-0 bg-stone-900/40"></div>
+      <aside id="drawer" class="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-xl">
+        <header class="flex items-start justify-between gap-3 border-b border-stone-200 px-5 py-3">
+          <div>
+            <p class="font-mono text-sm font-medium text-orange-700">AS-1024</p>
+            <h2 class="text-lg font-semibold text-stone-900">Rudrabhishek</h2>
+            <p class="text-sm text-stone-500">Kashi Vishwanath, Varanasi</p>
+          </div>
+          <span class="rounded-lg p-2 text-stone-400">✕</span>
+        </header>
+        <div class="space-y-3 px-5 py-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-stone-500">Current status</span>
+            <span id="dBadge" class="will inline-flex"></span>
+          </div>
+          <div id="dNext" class="w-full rounded-lg bg-orange-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-sm">Mark as Confirmed</div>
+          <div>
+            <p class="mb-1.5 text-xs text-stone-400">Or set status directly</p>
+            <div id="dSet" class="grid grid-cols-4 gap-2"></div>
+          </div>
+        </div>
+        <section class="border-t border-stone-100 px-5 py-3">
+          <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Puja</h3>
+          <dl>
+            <div class="flex justify-between gap-4 py-1 text-sm"><dt class="text-stone-500">Puja for</dt><dd class="text-right text-stone-900">Ramesh Sharma · Gotra: Kashyap</dd></div>
+            <div class="flex justify-between gap-4 py-1 text-sm"><dt class="text-stone-500">Puja date</dt><dd class="text-right text-stone-900">1 Dec 2026 <span class="text-stone-400">(In 7 days)</span></dd></div>
+          </dl>
+          <blockquote class="mt-2 rounded-lg bg-orange-50 px-3 py-2 text-sm italic text-stone-700">“Good health for my father”</blockquote>
+        </section>
+        <section class="border-t border-stone-100 px-5 py-3">
+          <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Status history</h3>
+          <ol class="relative ml-1.5 border-l border-stone-200 pl-4">
+            <li class="relative text-sm">
+              <span id="hDot" class="absolute -left-[21.5px] top-1.5 h-2.5 w-2.5 rounded-full bg-sky-500 ring-2 ring-white"></span>
+              <div id="hNew" class="overflow-hidden">
+                <div class="font-medium text-stone-800">Confirmed</div>
+                <div class="pb-3 text-xs text-stone-400">24 Nov 2026, 11:02 am</div>
+              </div>
+            </li>
+            <li class="relative text-sm">
+              <span class="absolute -left-[21.5px] top-1.5 h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-white"></span>
+              <div class="font-medium text-stone-800">Pending</div>
+              <div class="text-xs text-stone-400">24 Nov 2026, 10:48 am</div>
+            </li>
+          </ol>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ============ SCENE 6: RUN-SHEET ============ -->
+  <div id="sheet" class="will abs overflow-hidden rounded-[28px] border border-stone-200 bg-[#fdfaf6] shadow-2xl" style="left:310px; top:52px; width:1300px; height:820px;">
+    <div class="zoomed px-8 py-5" style="width:928.57px;">
+      <div class="mb-4 flex flex-wrap items-center gap-2">
+        <span class="h-9 rounded-lg border border-stone-200 bg-white px-3 text-sm leading-9 text-stone-700">← Prev day</span>
+        <span class="h-9 rounded-lg border border-stone-200 bg-white px-3 text-sm leading-9 text-stone-700">25-11-2026</span>
+        <span class="h-9 rounded-lg border border-stone-200 bg-white px-3 text-sm leading-9 text-stone-700">Next day →</span>
+        <div class="ml-auto flex gap-2">
+          <span class="h-9 rounded-lg border border-stone-200 bg-white px-3 text-sm leading-9 text-stone-700">Copy as text</span>
+          <span id="waBtn" class="h-9 rounded-lg border border-stone-200 bg-white px-3 text-sm leading-9 text-stone-700">Share on WhatsApp</span>
+          <span class="h-9 rounded-lg bg-orange-600 px-4 text-sm font-semibold leading-9 text-white">Print</span>
+        </div>
+      </div>
+      <header class="mb-4 border-b-2 border-orange-500 pb-3">
+        <p class="text-xs font-semibold uppercase tracking-wider text-orange-700">Aaradhya Setu · Puja Run-Sheet</p>
+        <h1 class="text-2xl font-semibold text-stone-900">Wednesday, 25 November 2026</h1>
+        <p class="text-sm text-stone-500">2 pujas across 2 temples</p>
+      </header>
+      <div id="sheetGroups" class="space-y-4"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCENE 7: OUTRO ============ -->
+  <div id="outro" class="abs inset-0 flex flex-col items-center justify-center">
+    <div id="oLogo" class="will flex h-44 w-44 items-center justify-center rounded-full bg-linear-to-br from-orange-500 to-amber-500 text-[88px] text-white shadow-2xl">ॐ</div>
+    <div id="oTitle" class="will mt-10 text-[96px] font-semibold leading-none tracking-tight text-stone-900">Aaradhya Setu</div>
+    <div id="oSub" class="will mt-5 text-[46px] text-stone-500">Puja Booking Dashboard</div>
+    <div id="oStack" class="will mt-12 flex gap-4">
+      <span class="rounded-full border border-stone-200 bg-white px-6 py-2.5 text-2xl font-medium text-stone-700">Next.js</span>
+      <span class="rounded-full border border-stone-200 bg-white px-6 py-2.5 text-2xl font-medium text-stone-700">Node.js</span>
+      <span class="rounded-full border border-stone-200 bg-white px-6 py-2.5 text-2xl font-medium text-stone-700">MongoDB</span>
+    </div>
+    <div id="oRepo" class="will mt-8 font-mono text-[28px] text-orange-700">github.com/PrakarshSrivastav/Aradhya-Setu_THA</div>
+  </div>
+
+  <!-- caption -->
+  <div id="caption" class="will abs left-0 right-0 text-center text-[54px] font-semibold tracking-tight text-stone-900" style="top:914px;"></div>
+
+  <!-- cursor -->
+  <svg id="cursor" class="abs will" style="left:0; top:0; width:46px; height:46px; transform-origin: 6px 4px;" viewBox="0 0 24 24">
+    <path d="M4 2 L4 19 L8.6 14.8 L11.6 21.6 L14.6 20.3 L11.7 13.6 L18 13.4 Z" fill="#1c1917" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+  </svg>
+</div>
+
+<script>
+// ---------- data (project seed data; phone numbers replaced with placeholders) ----------
+const STATUS = {
+  Pending:   { badge: "bg-amber-100 text-amber-800 ring-amber-200", dot: "bg-amber-500" },
+  Confirmed: { badge: "bg-sky-100 text-sky-800 ring-sky-200", dot: "bg-sky-500" },
+  "In Progress": { badge: "bg-violet-100 text-violet-800 ring-violet-200", dot: "bg-violet-500" },
+  Completed: { badge: "bg-emerald-100 text-emerald-800 ring-emerald-200", dot: "bg-emerald-500" },
+};
+const badge = (s) => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${STATUS[s].badge}"><span class="h-1.5 w-1.5 rounded-full ${STATUS[s].dot}"></span>${s}</span>`;
+
+const MAIN = [
+  ["AS-1024", "Priya Sharma", "+91 90000 00024", "Rudrabhishek", "Kashi Vishwanath, Varanasi", "1 Dec 2026", "In 7 days", "₹2,351", "Pending"],
+  ["AS-1019", "Pooja Sharma", "+91 90000 00019", "Ganesh Puja", "Siddhivinayak, Mumbai", "11 Dec 2026", "In 17 days", "₹1,603", "Confirmed"],
+  ["AS-1029", "Vikram Singh", "+91 90000 00029", "Rudrabhishek", "Kashi Vishwanath, Varanasi", "12 Dec 2026", "In 18 days", "₹2,601", "Pending"],
+  ["AS-1028", "Ishita Banerjee", "+91 90000 00028", "Maha Mrityunjaya Jaap", "Mahakaleshwar, Ujjain", "5 Dec 2026", "In 11 days", "₹5,201", "Confirmed"],
+];
+const ATT = [
+  ["AS-1013", "Sneha Kulkarni", "+91 90000 00013", "Satyanarayan Katha", "ISKCON, Vrindavan", "18 Nov 2026", "6 days ago", "₹1,652", "Confirmed", "Puja date has passed — not marked Completed"],
+  ["AS-1001", "Karan Malhotra", "+91 90000 00001", "Rudrabhishek", "Kashi Vishwanath, Varanasi", "25 Nov 2026", "Tomorrow", "₹2,251", "Pending", "Puja in 1 day — not confirmed yet"],
+  ["AS-1027", "Neha Gupta", "+91 90000 00027", "Satyanarayan Katha", "ISKCON, Vrindavan", "25 Nov 2026", "Tomorrow", "₹2,002", "Pending", "Puja in 1 day — not confirmed yet"],
+  ["AS-1005", "Lakshmi Narayan", "+91 90000 00005", "Ganesh Puja", "Siddhivinayak, Mumbai", "26 Nov 2026", "In 2 days", "₹1,052", "Pending", "Puja in 2 days — not confirmed yet"],
+];
+
+function rowHtml(r, att) {
+  const soon = r[6] === "Tomorrow";
+  return `<tr class="will ${att ? "bg-rose-50/50 shadow-[inset_3px_0_0_var(--color-rose-500)]" : ""}">
+    <td class="px-4 py-2.5"><span class="font-mono font-medium text-orange-700">${r[0]}</span></td>
+    <td class="px-4 py-2.5"><div class="font-medium text-stone-900">${r[1]}</div><div class="text-xs text-stone-400">${r[2]}</div></td>
+    <td class="px-4 py-2.5"><div class="text-stone-800">${r[3]}</div><div class="text-xs text-stone-400">${r[4]}</div></td>
+    <td class="px-4 py-2.5"><div class="text-stone-800">${r[5]}</div><div class="text-xs ${soon ? "font-medium text-orange-600" : "text-stone-400"}">${r[6]}</div></td>
+    <td class="px-4 py-2.5 text-right font-medium tabular-nums text-stone-900">${r[7]}</td>
+    <td class="px-4 py-2.5">${badge(r[8])}${att ? `<div class="mt-1 flex items-center gap-1 text-xs font-medium text-rose-700"><span>⚠</span>${r[9]}</div>` : ""}</td>
+  </tr>`;
+}
+document.getElementById("rowsMain").innerHTML = MAIN.map((r) => rowHtml(r, false)).join("");
+document.getElementById("rowsAtt").innerHTML = ATT.map((r) => rowHtml(r, true)).join("");
+
+const CARDS = [["All bookings", "", 30, 30], ["Pending", "Pending", 7, 6], ["Confirmed", "Confirmed", 5, 6], ["In Progress", "In Progress", 1, 1], ["Completed", "Completed", 17, 17]];
+document.getElementById("cards").innerHTML = CARDS.map(([label, s], i) => `
+  <div class="will rounded-xl border bg-white p-3 text-left shadow-sm ${i === 0 ? "border-orange-500 ring-2 ring-orange-200" : "border-stone-200"}">
+    <div class="flex items-center gap-2 text-sm text-stone-500">${s ? `<span class="h-2 w-2 rounded-full ${STATUS[s].dot}"></span>` : ""}${label}</div>
+    <div class="mt-0.5 text-2xl font-semibold tabular-nums text-stone-900" data-count>0</div>
+  </div>`).join("");
+
+const SET_BTN_BASE = "rounded-lg border px-2 py-1.5 text-center text-xs font-medium";
+function setButtons(current) {
+  return Object.keys(STATUS).map((s) => s === current
+    ? `<span class="${SET_BTN_BASE} border-transparent ring-1 ring-inset ${STATUS[s].badge}">${s}</span>`
+    : `<span class="${SET_BTN_BASE} border-stone-200 text-stone-600">${s}</span>`).join("");
+}
+
+const SHEET = [
+  ["Kashi Vishwanath, Varanasi", "Rudrabhishek", "AS-1001", "Karan Malhotra (Gotra: Vishwamitra)", "Removal of obstacles in career", "Flower Garland Offering", "Karan Malhotra"],
+  ["ISKCON, Vrindavan", "Satyanarayan Katha", "AS-1027", "Neha Gupta (Gotra: Gautam)", "Peace and prosperity at home", "Vastra Offering", "Neha Gupta"],
+];
+document.getElementById("sheetGroups").innerHTML = SHEET.map((g) => `
+  <section class="will">
+    <h2 class="mb-2 flex items-center gap-2 text-lg font-semibold text-stone-900"><span>📍</span>${g[0]}<span class="text-sm font-normal text-stone-400">(1)</span></h2>
+    <div class="rounded-xl border border-rose-300 bg-white p-4">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-baseline gap-2"><span class="text-stone-400">1.</span><div><div class="font-semibold text-stone-900">${g[1]}</div><div class="font-mono text-xs text-orange-700">${g[2]}</div></div></div>
+        ${badge("Pending")}
+      </div>
+      <dl class="mt-3 grid grid-cols-[8rem_1fr] gap-x-4 gap-y-1.5 pl-6 text-sm">
+        <dt class="text-stone-500">Puja for</dt><dd class="font-medium text-stone-900">${g[3]}</dd>
+        <dt class="text-stone-500">Sankalp</dt><dd class="italic text-stone-800">“${g[4]}”</dd>
+        <dt class="text-stone-500">Offerings</dt><dd class="text-stone-800">${g[5]}</dd>
+        <dt class="text-stone-500">Booked by</dt><dd class="text-stone-800">${g[6]}</dd>
+      </dl>
+      <p class="mt-3 pl-6 text-sm font-semibold text-rose-700">⚠ Not confirmed yet — arrange a pandit before this puja</p>
+    </div>
+  </section>`).join("");
+
+// ---------- timeline helpers ----------
+const $ = (id) => document.getElementById(id);
+const clamp = (x) => Math.max(0, Math.min(1, x));
+const p = (t, a, b) => clamp((t - a) / (b - a));
+const outCubic = (x) => 1 - Math.pow(1 - x, 3);
+const inCubic = (x) => x * x * x;
+const inOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const outBack = (x) => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const lerp = (a, b, x) => a + (b - a) * x;
+function style(el, { o = 1, x = 0, y = 0, s = 1, show = true } = {}) {
+  el.style.display = show ? "" : "none";
+  el.style.opacity = o;
+  el.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
+}
+// enter (a..b) then exit (c..d): returns {o, y}
+function inOutAnim(t, a, b, c, d, dy = 24) {
+  const i = outCubic(p(t, a, b)), e = inCubic(p(t, c, d));
+  return { o: i * (1 - e), y: lerp(dy, 0, i) - e * dy * 0.8 };
+}
+
+const CAPTIONS = [
+  [3.45, 5.8, "Every puja booking. One dashboard."],
+  [6.1, 9.3, "Find any booking in a keystroke."],
+  [9.6, 13.35, "One click. Saved for the whole team."],
+  [13.8, 16.35, "Nothing slips past puja day."],
+  [16.85, 19.35, "Tomorrow's pujas, ready for the pandit."],
+];
+
+let lastDrawerState = null;
+
+window.renderAt = function (t) {
+  // ---- scene 1: hook ----
+  const s1On = t < 3.0;
+  $("s1").style.display = s1On ? "" : "none";
+  if (s1On) {
+    const ti = outBack(p(t, 0.4, 0.9)), te = inCubic(p(t, 2.6, 2.95));
+    style($("toast"), { o: clamp(p(t, 0.4, 0.7)) * (1 - te), y: lerp(-70, 0, ti) - te * 40, s: lerp(0.96, 1, ti) });
+    const ring = p(t, 0.5, 1.1);
+    $("toastLogo").style.boxShadow = `0 0 0 ${ring * 18}px rgba(249,115,22,${0.35 * (1 - ring)})`;
+    const ni = outCubic(p(t, 1.5, 1.85));
+    style($("nowwhat"), { o: ni * (1 - te), y: lerp(30, 0, ni) - te * 40, s: lerp(0.94, 1, ni) });
+  }
+
+  // ---- window (scenes 2–5) ----
+  const winOn = t >= 3.0 && t < 16.8;
+  if (winOn) {
+    const wi = outCubic(p(t, 3.0, 3.45)), we = inCubic(p(t, 16.45, 16.75));
+    style($("win"), { o: wi * (1 - we), y: lerp(60, 0, wi) - we * 50, s: lerp(0.97, 1, wi) });
+  } else style($("win"), { show: false });
+
+  if (winOn) {
+    const att = t >= 13.5; // scene 5 state
+    // cards
+    const counts = [...document.querySelectorAll("[data-count]")];
+    [...$("cards").children].forEach((c, i) => {
+      const ci = outCubic(p(t, 3.3 + 0.08 * i, 3.65 + 0.08 * i));
+      style(c, { o: ci, y: lerp(16, 0, ci) });
+      const base = t >= 11.0 ? CARDS[i][3] : CARDS[i][2];
+      counts[i].textContent = Math.round(base * outCubic(p(t, 3.4 + 0.08 * i, 4.3)));
+    });
+    $("subtitle").style.display = att ? "none" : "";
+
+    // search + typing (scene 3)
+    const typed = att ? 0 : [6.5, 6.75, 7.0, 7.25, 7.5].filter((k) => t >= k).length;
+    $("searchText").textContent = "priya".slice(0, typed);
+    $("searchPh").style.display = typed ? "none" : "";
+    const focused = !att && t >= 6.2 && t < 9.2;
+    $("search").className = `relative flex h-10 flex-1 items-center rounded-lg border bg-white pl-9 pr-3 text-sm ${focused ? "border-orange-500 ring-2 ring-orange-200" : "border-stone-300"}`;
+    $("caret").style.display = focused && (t < 7.75 || Math.floor(t * 2) % 2 === 0) ? "" : "none";
+    $("clearBtn").style.visibility = typed || att ? "visible" : "hidden";
+
+    // rows
+    const mainRows = [...$("rowsMain").children];
+    $("rowsMain").style.display = att ? "none" : "";
+    mainRows.forEach((r, i) => {
+      const ri = outCubic(p(t, 3.75 + 0.12 * i, 4.1 + 0.12 * i));
+      const gone = i > 0 ? p(t, 7.75, 8.05) : 0;
+      style(r, { o: ri * (1 - gone), x: lerp(-24, 0, ri), show: !(i > 0 && t >= 8.05) });
+      if (i === 0) r.style.background = t >= 8.75 && t < 9.4 ? (t >= 9.0 && t < 9.15 ? "#ffedd5" : "rgba(255,247,237,.6)") : "";
+    });
+    $("rowsAtt").style.display = att ? "" : "none";
+    [...$("rowsAtt").children].forEach((r, i) => {
+      const ri = outCubic(p(t, 13.95 + 0.1 * i, 14.3 + 0.1 * i));
+      style(r, { o: ri, x: lerp(-24, 0, ri) });
+    });
+    $("countLine").textContent = att ? "4 bookings" : t >= 8.0 ? "1 booking" : "30 bookings";
+    $("attOnly").style.display = att ? "" : "none";
+
+    // attention banner (scene 5)
+    const bi = outCubic(p(t, 13.6, 13.95));
+    $("bannerWrap").style.maxHeight = `${bi * 120}px`;
+    $("banner").style.opacity = outCubic(p(t, 13.75, 14.05));
+    $("banner").style.transform = `translateY(${lerp(-10, 0, outCubic(p(t, 13.75, 14.05)))}px)`;
+
+    // drawer (scene 4)
+    const di = outCubic(p(t, 9.25, 9.7)), de = inCubic(p(t, 13.45, 13.75));
+    const dv = di * (1 - de);
+    $("overlay").style.display = dv > 0 ? "" : "none";
+    $("overlay").style.opacity = dv;
+    $("drawer").style.display = dv > 0 ? "" : "none";
+    $("drawer").style.transform = `translateX(${(1 - dv) * 100}%)`;
+    const confirmed = t >= 11.0;
+    if (lastDrawerState !== confirmed) {
+      $("dBadge").innerHTML = badge(confirmed ? "Confirmed" : "Pending");
+      $("dNext").textContent = confirmed ? "Mark as In Progress" : "Mark as Confirmed";
+      $("dSet").innerHTML = setButtons(confirmed ? "Confirmed" : "Pending");
+      lastDrawerState = confirmed;
+    }
+    const pop = p(t, 11.0, 11.3);
+    $("dBadge").style.transform = `scale(${confirmed ? lerp(1.25, 1, outCubic(pop)) : 1})`;
+    $("dNext").style.filter = t >= 10.95 && t < 11.12 ? "brightness(0.85)" : "";
+    const hn = outCubic(p(t, 11.05, 11.4));
+    $("hNew").style.maxHeight = `${hn * 60}px`;
+    $("hNew").style.opacity = hn;
+    $("hDot").style.opacity = hn;
+    $("hDot").style.transform = `scale(${hn})`;
+  }
+
+  // ---- run-sheet (scene 6) ----
+  const sheetOn = t >= 16.7 && t < 19.75;
+  if (sheetOn) {
+    const si = outCubic(p(t, 16.7, 17.1)), se = inCubic(p(t, 19.45, 19.7));
+    style($("sheet"), { o: si * (1 - se), y: lerp(60, 0, si) - se * 50, s: lerp(0.97, 1, si) });
+    [...$("sheetGroups").children].forEach((g, i) => {
+      const gi = outCubic(p(t, 17.0 + 0.2 * i, 17.4 + 0.2 * i));
+      style(g, { o: gi, y: lerp(20, 0, gi) });
+    });
+    const pulse = (a) => { const q = p(t, a, a + 0.45); return q > 0 && q < 1 ? q : 0; };
+    const q = pulse(18.0) || pulse(18.5) || pulse(19.0);
+    $("waBtn").style.boxShadow = q ? `0 0 0 ${q * 10}px rgba(234,88,12,${0.45 * (1 - q)})` : "";
+    $("waBtn").className = `h-9 rounded-lg border px-3 text-sm leading-9 ${t >= 17.9 ? "border-orange-300 bg-orange-50 font-semibold text-orange-700" : "border-stone-200 bg-white text-stone-700"}`;
+  } else style($("sheet"), { show: false });
+
+  // ---- outro (scene 7) ----
+  const oOn = t >= 19.65;
+  $("outro").style.display = oOn ? "" : "none";
+  if (oOn) {
+    const l = outBack(p(t, 19.7, 20.15));
+    style($("oLogo"), { o: clamp(p(t, 19.7, 19.95)), s: lerp(0.6, 1, l) });
+    [["oTitle", 19.95], ["oSub", 20.15], ["oStack", 20.4], ["oRepo", 20.65]].forEach(([id, a]) => {
+      const k = outCubic(p(t, a, a + 0.4));
+      style($(id), { o: k, y: lerp(24, 0, k) });
+    });
+  }
+
+  // ---- caption ----
+  const cap = CAPTIONS.find(([a, b]) => t >= a && t < b + 0.25);
+  if (cap) {
+    const [a, b, text] = cap;
+    const c = inOutAnim(t, a, a + 0.3, b, b + 0.25, 20);
+    $("caption").textContent = text;
+    style($("caption"), { o: c.o, y: c.y });
+  } else style($("caption"), { o: 0 });
+
+  // ---- cursor ----
+  const stageRect = $("stage").getBoundingClientRect();
+  const center = (el, dx = 0, dy = 0) => { const r = el.getBoundingClientRect(); return [r.left - stageRect.left + r.width * 0.35 + dx, r.top - stageRect.top + r.height * 0.5 + dy]; };
+  let cur = null;
+  if (t >= 8.0 && t < 9.35) {
+    const target = center($("rowsMain").children[0].children[1]);
+    const k = inOut(p(t, 8.1, 8.85));
+    cur = { x: lerp(1500, target[0], k), y: lerp(800, target[1], k), o: p(t, 8.0, 8.2) * (1 - p(t, 9.2, 9.35)), press: t >= 9.0 && t < 9.12 };
+  } else if (t >= 9.95 && t < 11.7) {
+    const target = center($("dNext"), 0, 0);
+    const k = inOut(p(t, 10.1, 10.85));
+    cur = { x: lerp(1000, target[0], k), y: lerp(760, target[1], k), o: p(t, 9.95, 10.15) * (1 - p(t, 11.5, 11.7)), press: t >= 11.0 && t < 11.12 };
+  }
+  if (cur) style($("cursor"), { o: cur.o, x: cur.x, y: cur.y, s: cur.press ? 0.82 : 1 });
+  else style($("cursor"), { show: false });
+};
+
+window.renderAt(0);
+</script>
+</body>
+</html>

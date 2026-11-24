@@ -2,12 +2,18 @@
 
 SDE Intern Assignment, **Option 2: Full-Stack Puja Booking Dashboard**.
 
+[![Watch the 22-second launch video](brag-output/brag.jpg)](brag-output/brag.mp4)
+
+▶ **[Watch the launch video](brag-output/brag.mp4)** (22 s, made with the [/brag](https://github.com/latent-spaces/brag) skill)
+
 | Path | What it is |
 |---|---|
 | [`puja-dashboard/`](puja-dashboard/) | The app (Next.js + Node.js API routes + MongoDB). Setup and run steps in its README. |
 | [`scenario.txt`](scenario.txt) | The story in plain English: how a customer books, what the admin does next. |
 | [`workflow.txt`](workflow.txt) | Step-by-step flow of one booking, showing exactly what changes in the database at each step. |
 | [`db.txt`](db.txt) | Database structure: every field, its type and where the app uses it. |
+| [`ai.txt`](ai.txt) | How the project was planned and how AI was used. |
+| [`brag-output/`](brag-output/) | Launch video, poster, storyboard and share copy (+ the scripts that rendered it). |
 
 Quick start:
 

@@ -1,0 +1,1 @@
+A devotee books a Rudrabhishek in Varanasi from 2,000 km away. Then what? I built the admin side for Aaradhya Setu: find any booking in a keystroke, confirm it in one click, get warned before a puja is missed, and send the pandit tomorrow's run-sheet on WhatsApp. Next.js + Node + MongoDB.
