@@ -12,9 +12,8 @@ const SORT_OPTIONS = [
 const selectClass =
   "h-10 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-800 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200";
 
-export default function Toolbar({ search, onSearch, status, onStatus, puja, onPuja, sort, onSort, onClear }) {
+export default function Toolbar({ search, onSearch, status, onStatus, puja, onPuja, sort, onSort, onClear, hasFilters }) {
   const sortKey = `${sort.field}:${sort.order}`;
-  const hasFilters = search || status || puja;
 
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center">

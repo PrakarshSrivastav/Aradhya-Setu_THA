@@ -21,7 +21,7 @@ To use your own MongoDB/Atlas instead, set `MONGODB_URI` in `.env.local` and run
 
 | Method | Route | What it does |
 |---|---|---|
-| GET | `/api/bookings?search=&status=&puja=&sort=&order=` | List bookings + counts per status. `sort`: `pujaDate`, `amount`, `createdAt`, `bookingId`; `order`: `asc`/`desc` |
+| GET | `/api/bookings?search=&status=&puja=&attention=1&date=YYYY-MM-DD&sort=&order=` | List bookings + counts per status + `attentionCount`. `attention=1`: only at-risk bookings. `date`: only pujas on that day. `sort`: `pujaDate`, `amount`, `createdAt`, `bookingId`; `order`: `asc`/`desc` |
 | GET | `/api/bookings/:bookingId` | One booking, for the details view |
 | PATCH | `/api/bookings/:bookingId` | Body `{ "status": "Confirmed" }` — validates the status and records it in `statusHistory` |
 
@@ -48,6 +48,10 @@ scripts/seed.mjs                dummy data
 - Booking details slide-over: devotee contact, beneficiaries & gotra, sankalp, payment breakdown, status history
 - Status changes: one-click "Mark as next status", or set any status directly; saved to MongoDB
 - Responsive: table on desktop, cards on mobile
+- **Needs attention alerts** (`lib/attention.js`): a banner counts bookings at risk of being missed and
+  filters to them in one click. Rules: still *Pending* with the puja ≤ 2 days away (or past), or
+  *Confirmed / In Progress* after the puja date has passed. Each flagged row and its details panel
+  say why. The same rules drive the MongoDB query and the on-screen reason, so they can't disagree.
 
 ## Troubleshooting
 

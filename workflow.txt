@@ -223,6 +223,15 @@ The dashboard helps Rahul with timing: on 30 Nov the puja date shows "Today" (in
 Sorting by "Puja date: soonest first" with the "Confirmed" filter gives him
 today's to-do list.
 
+SAFETY NET - "NEEDS ATTENTION"                                     [BUILT]
+If a step is forgotten, the dashboard flags it with a red banner at the top:
+   - still Pending and the puja is 2 days away or less  -> "Puja in 1 day - not confirmed yet"
+   - Confirmed / In Progress but the puja date has passed  -> "Puja date has passed - not marked Completed"
+"Show them" filters to just those bookings. Fixing one (pressing the right
+status button) removes it from the list and lowers the count straight away.
+DATABASE CHANGE: none. It is a READ query (GET /api/bookings?attention=1).
+The rules live in one file, lib/attention.js.
+
 Mistakes can be fixed: "set status directly" lets the admin move a booking
 back (e.g. Confirmed -> Pending). That is also recorded in statusHistory, so
 nothing is silently lost.

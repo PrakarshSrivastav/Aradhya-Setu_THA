@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { STATUSES } from "@/lib/constants";
 import { formatDate, formatDateTime, formatINR, relativeDay } from "@/lib/format";
+import { attentionReason } from "@/lib/attention";
 import StatusBadge, { STATUS_STYLES } from "./StatusBadge";
 
 function Section({ title, children }) {
@@ -70,6 +71,7 @@ export default function BookingDrawer({ bookingId, onClose, onUpdated }) {
     }
   }
 
+  const reason = booking ? attentionReason(booking) : null;
   const currentIndex = booking ? STATUSES.indexOf(booking.status) : -1;
   const nextStatus = STATUSES[currentIndex + 1];
 
@@ -104,6 +106,14 @@ export default function BookingDrawer({ bookingId, onClose, onUpdated }) {
             <>
               {/* Status controls */}
               <div className="space-y-3 px-5 py-4">
+                {reason && (
+                  <div role="alert" className="flex gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
+                    <span aria-hidden="true">⚠</span>
+                    <span>
+                      <strong>Needs attention:</strong> {reason}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-stone-500">Current status</span>
                   <StatusBadge status={booking.status} />

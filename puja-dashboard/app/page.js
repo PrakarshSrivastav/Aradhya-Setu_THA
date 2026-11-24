@@ -5,6 +5,7 @@ import StatusCards from "@/components/StatusCards";
 import Toolbar from "@/components/Toolbar";
 import BookingsTable from "@/components/BookingsTable";
 import BookingDrawer from "@/components/BookingDrawer";
+import AttentionBanner from "@/components/AttentionBanner";
 
 // Default sort direction when a column header is clicked for the first time
 const DEFAULT_ORDER = { createdAt: "desc", amount: "desc", pujaDate: "asc", bookingId: "asc" };
@@ -16,6 +17,7 @@ export default function Dashboard() {
   const [status, setStatus] = useState("");
   const [puja, setPuja] = useState("");
   const [sort, setSort] = useState({ field: "createdAt", order: "desc" });
+  const [attentionOnly, setAttentionOnly] = useState(false);
 
   // Data from the API. We remember which query each result belongs to,
   // so "loading" is simply: the latest result isn't for the current query yet.
@@ -35,6 +37,7 @@ export default function Dashboard() {
   if (debouncedSearch) params.set("search", debouncedSearch);
   if (status) params.set("status", status);
   if (puja) params.set("puja", puja);
+  if (attentionOnly) params.set("attention", "1");
   const query = params.toString();
 
   useEffect(() => {
@@ -65,7 +68,10 @@ export default function Dashboard() {
     setDebouncedSearch("");
     setStatus("");
     setPuja("");
+    setAttentionOnly(false);
   }
+
+  const hasFilters = Boolean(search || status || puja || attentionOnly);
 
   // After a status change: update the row right away, then refetch so the
   // counts (and the list, if it's filtered by status) are correct.
@@ -107,6 +113,12 @@ export default function Dashboard() {
           <p className="text-sm text-stone-500">Search, filter and update the status of puja bookings.</p>
         </div>
 
+        <AttentionBanner
+          count={result?.attentionCount}
+          active={attentionOnly}
+          onToggle={() => setAttentionOnly((on) => !on)}
+        />
+
         <StatusCards counts={result?.statusCounts} active={status} onSelect={setStatus} />
 
         <Toolbar
@@ -119,11 +131,13 @@ export default function Dashboard() {
           sort={sort}
           onSort={setSort}
           onClear={clearFilters}
+          hasFilters={hasFilters}
         />
 
         <div className="flex items-center justify-between text-sm text-stone-500">
           <span>
             {result ? `${bookings.length} booking${bookings.length === 1 ? "" : "s"}` : " "}
+            {attentionOnly && <span className="ml-1 font-medium text-rose-700">· needing attention only</span>}
           </span>
           {loading && <span className="text-orange-600">Loading…</span>}
         </div>

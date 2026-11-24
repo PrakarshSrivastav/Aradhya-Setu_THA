@@ -1,5 +1,18 @@
 import StatusBadge from "./StatusBadge";
 import { formatDate, formatINR, relativeDay } from "@/lib/format";
+import { attentionReason } from "@/lib/attention";
+
+// Small red "why this needs attention" line, shown under the status badge
+function AttentionNote({ booking }) {
+  const reason = attentionReason(booking);
+  if (!reason) return null;
+  return (
+    <div className="mt-1 flex items-center gap-1 text-xs font-medium text-rose-700">
+      <span aria-hidden="true">⚠</span>
+      {reason}
+    </div>
+  );
+}
 
 // Column headers that can be clicked to sort
 function SortHeader({ label, field, sort, onSort, align = "left" }) {
@@ -56,7 +69,9 @@ export default function BookingsTable({ bookings, sort, onSort, onOpen }) {
               <tr
                 key={b.bookingId}
                 onClick={() => onOpen(b.bookingId)}
-                className="cursor-pointer transition hover:bg-orange-50/60"
+                className={`cursor-pointer transition hover:bg-orange-50/60 ${
+                  attentionReason(b) ? "bg-rose-50/50 shadow-[inset_3px_0_0_var(--color-rose-500)]" : ""
+                }`}
               >
                 <td className="px-4 py-3">
                   <button
@@ -80,7 +95,10 @@ export default function BookingsTable({ bookings, sort, onSort, onOpen }) {
                 </td>
                 <td className="px-4 py-3"><DateCell value={b.pujaDate} /></td>
                 <td className="px-4 py-3 text-right font-medium tabular-nums text-stone-900">{formatINR(b.amount)}</td>
-                <td className="px-4 py-3"><StatusBadge status={b.status} /></td>
+                <td className="px-4 py-3">
+                  <StatusBadge status={b.status} />
+                  <AttentionNote booking={b} />
+                </td>
                 <td className="px-4 py-3 text-stone-300">›</td>
               </tr>
             ))}
@@ -95,7 +113,9 @@ export default function BookingsTable({ bookings, sort, onSort, onOpen }) {
             <button
               type="button"
               onClick={() => onOpen(b.bookingId)}
-              className="w-full rounded-xl border border-stone-200 bg-white p-4 text-left shadow-sm active:bg-orange-50"
+              className={`w-full rounded-xl border bg-white p-4 text-left shadow-sm active:bg-orange-50 ${
+                attentionReason(b) ? "border-rose-300 shadow-[inset_3px_0_0_var(--color-rose-500)]" : "border-stone-200"
+              }`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -105,6 +125,7 @@ export default function BookingsTable({ bookings, sort, onSort, onOpen }) {
                 </div>
                 <StatusBadge status={b.status} />
               </div>
+              <AttentionNote booking={b} />
               <div className="mt-3 flex items-end justify-between border-t border-stone-100 pt-3 text-sm">
                 <DateCell value={b.pujaDate} />
                 <div className="font-semibold tabular-nums text-stone-900">{formatINR(b.amount)}</div>
