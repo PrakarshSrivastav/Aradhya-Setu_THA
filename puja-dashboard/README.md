@@ -31,6 +31,8 @@ Statuses: `Pending → Confirmed → In Progress → Completed`
 
 ```
 app/page.js                     dashboard UI
+app/run-sheet/page.js           daily run-sheet page (UI in components/RunSheet.js)
+lib/attention.js                "needs attention" rules
 app/api/bookings/route.js       list / search / filter / sort
 app/api/bookings/[id]/route.js  get one, change status
 models/Booking.js               Mongoose schema
@@ -52,6 +54,10 @@ scripts/seed.mjs                dummy data
   filters to them in one click. Rules: still *Pending* with the puja ≤ 2 days away (or past), or
   *Confirmed / In Progress* after the puja date has passed. Each flagged row and its details panel
   say why. The same rules drive the MongoDB query and the on-screen reason, so they can't disagree.
+- **Daily puja run-sheet** (`/run-sheet?date=YYYY-MM-DD`, "Today's run-sheet" button): every puja on
+  one day grouped by temple, with what the pandit needs — names, gotra, sankalp, offerings — and
+  unconfirmed ones flagged. Print it (controls hide, tick-boxes appear), copy it as text, or share
+  on WhatsApp. Devotee phone/email are deliberately left off: the pandit doesn't need them.
 
 ## Troubleshooting
 

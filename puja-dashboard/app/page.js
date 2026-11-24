@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import StatusCards from "@/components/StatusCards";
 import Toolbar from "@/components/Toolbar";
@@ -97,13 +98,21 @@ export default function Dashboard() {
               <div className="text-xs text-stone-500">Puja Bookings · Admin</div>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setRefreshCount((n) => n + 1)}
-            className="rounded-lg border border-stone-200 px-3 py-1.5 text-sm text-stone-600 hover:bg-stone-50"
-          >
-            Refresh
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/run-sheet"
+              className="rounded-lg bg-orange-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-orange-700"
+            >
+              Today&apos;s run-sheet
+            </Link>
+            <button
+              type="button"
+              onClick={() => setRefreshCount((n) => n + 1)}
+              className="rounded-lg border border-stone-200 px-3 py-1.5 text-sm text-stone-600 hover:bg-stone-50"
+            >
+              Refresh
+            </button>
+          </div>
         </div>
       </header>
 

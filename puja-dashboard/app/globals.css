@@ -11,3 +11,15 @@ body {
   color: #1c1917;
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
+
+/* Run-sheet printouts: plain white paper, keep colours on badges */
+@media print {
+  body {
+    background: white;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  @page {
+    margin: 12mm;
+  }
+}
